@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import {
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
   onAuthStateChanged,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signOut,
 } from "firebase/auth";
 import { auth } from "./firebase-config";
@@ -16,6 +18,27 @@ const App = () => {
   onAuthStateChanged(auth, (currentUser) => {
     setUser(currentUser);
   });
+
+  const requestOTP = async () => {
+    window.recaptchaVerifier = new RecaptchaVerifier("sign-in-button", {
+      size: "invisible",
+      callback: function (response) {
+        // reCAPTCHA solved, allow signInWithPhoneNumber.
+        onSignInSubmit();
+      },
+    });
+  };
+
+  const googleSignIn = () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   const register = async () => {
     try {
@@ -49,6 +72,7 @@ const App = () => {
 
   return (
     <div className="App">
+      <button onClick={googleSignIn}>Google sign in</button>
       <div>
         <h3> Register User </h3>
         <input
@@ -89,6 +113,10 @@ const App = () => {
       {user?.email}
 
       <button onClick={logout}> Sign Out </button>
+      <div>
+        <input type="tel" placeholder="Phone number" />
+        <button>click</button>
+      </div>
     </div>
   );
 };
